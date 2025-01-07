@@ -30,7 +30,6 @@ public class App {
         Data d1 = new Data(1, "name1");
         Data d2 = new Data(2, "name2");
 
-        int someNumber;
 
         // Store Data objects into HashMap
         mymap.put(d1.id, d1);
