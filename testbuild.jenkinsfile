@@ -5,7 +5,7 @@ pipeline {
         SONARQUBE = 'sonarqube'
         ARTIFACT_NAME = 'demo-1.0-SNAPSHOT.jar'
         DEPLOY_ENV = 'production'
-        SONAR_TOKEN = 'sqa_4b14731b120b95412034167295285cf3445d14dd'  // You may want to replace this with Jenkins credentials
+        SONAR_TOKEN = 'sqa_0cbc6af2a323ce4456570d8f420fc77555aac8ea'  // You may want to replace this with Jenkins credentials
     }
 
     stages {

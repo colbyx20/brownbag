@@ -13,8 +13,8 @@ services:
       - dev-network
     environment:
       - JENKINS_OPTS=--prefix=/jenkins
-    command: >
-      /bin/bash -c "apt update && apt install -y maven && exec /usr/local/bin/jenkins.sh"
+    # command: >
+    #   /bin/bash -c "apt update && apt install -y maven && exec /usr/local/bin/jenkins.sh"
 
 
   sonarqube:
