@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Pull the code from Git repository
-                 git branch: 'main', url: 'https://github.com/colbyx20/brownbag.git'
+                git branch: 'main', url: 'https://github.com/colbyx20/brownbag.git'
             }
         }
 
