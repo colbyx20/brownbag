@@ -1,0 +1,82 @@
+pipeline {
+    agent any
+
+    environment {
+        SONARQUBE = 'sonarqube'
+        ARTIFACT_NAME = 'demo-1.0-SNAPSHOT.jar'
+        DEPLOY_ENV = 'production'
+        SONAR_TOKEN = 'sqa_4b14731b120b95412034167295285cf3445d14dd'  // You may want to replace this with Jenkins credentials
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Pull the code from Git repository
+                 git branch: 'main', url: 'https://github.com/colbyx20/brownbag.git'
+            }
+        }
+
+        stage('Clean') {
+            steps {
+                script {
+                   // Clean the previous build artifacts
+                   sh 'mvn clean -f demo/pom.xml'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    // Run the unit tests (including JaCoCo code coverage)
+                    sh 'mvn test -f demo/pom.xml'
+                }
+            }
+        }
+
+        // stage('SonarQube Analysis') {
+        //     steps {
+        //         script {
+        //             // Run SonarQube analysis
+        //             sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=sqa_4b14731b120b95412034167295285cf3445d14dd"
+        //         }
+        //     }
+        // }
+
+        stage('Package') {
+            steps {
+                script {
+                    // Package the application into a JAR file
+                    sh 'mvn package -f demo/pom.xml -DskipTests'
+                }
+            }
+        }
+
+        stage('Build Artifact') {
+            steps {
+                script {
+                    // Verify the artifact is created
+                    sh 'ls -l demo/target/*.jar'
+                }
+            }
+        }
+
+        // stage('Deploy') {
+        //     steps {
+        //         script {
+        //             // Deploy the artifact (example: pushing to Docker or to a server)
+        //             echo "Deploying artifact $ARTIFACT_NAME to $DEPLOY_ENV"
+        //             // Example: docker build and run commands
+        //             sh 'docker build -t demo-app .'
+        //             sh 'docker run -d -p 8080:8080 demo-app'
+        //         }
+        //     }
+        // }
+    }
+
+    // post {
+    //     always {
+    //         cleanWs()  // Clean workspace after each run
+    //     }
+    // }
+}
