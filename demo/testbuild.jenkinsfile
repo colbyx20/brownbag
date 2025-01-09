@@ -74,11 +74,7 @@ pipeline {
                             docker push colbyx20/brownbag:1
                         '''
                         
-                    }
-                    
-                    // sh 'docker login -u colbyx20@gmail.com -p Soulswitch12@'
-                    // sh 'docker build -t colbyx20/brownbag:1 .'
-                    
+                    }  
                 }
             }
         }
