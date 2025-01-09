@@ -74,6 +74,7 @@ networks:
 
 
 
+# apk add --no-cache git maven curl openjdk17
 
 
 
