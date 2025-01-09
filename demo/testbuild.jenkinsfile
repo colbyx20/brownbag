@@ -1,11 +1,14 @@
 pipeline {
-    agent any
+
+     agent {
+        label 'jenkins-docker'  // Specify the custom agent node (jenkins-docker)
+    }
 
     environment {
         SONARQUBE = 'sonarqube'
         ARTIFACT_NAME = 'demo-1.0-SNAPSHOT.jar'
         DEPLOY_ENV = 'production'
-        SONAR_TOKEN = 'sqa_0cbc6af2a323ce4456570d8f420fc77555aac8ea'  // You may want to replace this with Jenkins credentials
+        SONAR_TOKEN = 'sqa_401322c30adba780ed625702867c11294d4f9166'  // You may want to replace this with Jenkins credentials
     }
 
     stages {
@@ -19,8 +22,8 @@ pipeline {
         stage('Clean') {
             steps {
                 script {
-                   // Clean the previous build artifacts
-                   sh 'mvn clean -f demo/pom.xml'
+                  // Clean the previous build artifacts
+                  sh 'mvn clean -f demo/pom.xml'
                 }
             }
         }
@@ -38,7 +41,7 @@ pipeline {
         //     steps {
         //         script {
         //             // Run SonarQube analysis
-        //             sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=sqa_4b14731b120b95412034167295285cf3445d14dd"
+        //             sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=sqa_401322c30adba780ed625702867c11294d4f9166"
         //         }
         //     }
         // }
@@ -61,17 +64,24 @@ pipeline {
             }
         }
 
-        // stage('Deploy') {
-        //     steps {
-        //         script {
-        //             // Deploy the artifact (example: pushing to Docker or to a server)
-        //             echo "Deploying artifact $ARTIFACT_NAME to $DEPLOY_ENV"
-        //             // Example: docker build and run commands
-        //             sh 'docker build -t demo-app .'
-        //             sh 'docker run -d -p 8080:8080 demo-app'
-        //         }
-        //     }
-        // }
+        stage('Deploy') {
+            steps {
+                script {
+                    dir('/home/jenkins/workspace/brownbag/demo'){
+                        sh '''
+                            docker login
+                            docker build -t colbyx20/brownbag:1 .
+                            docker push colbyx20/brownbag:1
+                        '''
+                        
+                    }
+                    
+                    // sh 'docker login -u colbyx20@gmail.com -p Soulswitch12@'
+                    // sh 'docker build -t colbyx20/brownbag:1 .'
+                    
+                }
+            }
+        }
     }
 
     // post {

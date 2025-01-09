@@ -13,9 +13,25 @@ services:
       - dev-network
     environment:
       - JENKINS_OPTS=--prefix=/jenkins
-    # command: >
-    #   /bin/bash -c "apt update && apt install -y maven && exec /usr/local/bin/jenkins.sh"
 
+  jenkins-docker:
+    image: docker:dind
+    container_name: jenkins-docker
+    privileged: true
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    volumes:
+      - jenkins-docker-certs:/certs/client
+      - jenkins-data:/var/jenkins_home
+    networks:
+      dev-network:
+        aliases:
+          - docker
+    ports:
+      - "2376:2376"
+    command: >
+      --storage-driver overlay2 &&
+      curl -sO http://jenkins:8080/jenkins/jnlpJars/agent.jar;java -jar agent.jar -url http://jenkins:8080/jenkins/ -secret b9bc7453c58b5de992b010e6c56dd4b59a09d198fac1b2a0a6d256924d0e1041 -name "jenkins-docker" -webSocket -workDir "/home/jenkins"
 
   sonarqube:
     image: sonarqube:lts
@@ -49,7 +65,76 @@ services:
 
 volumes:
   jenkins_home:
+  jenkins-docker-certs:
+  jenkins-data:
 
 networks:
   dev-network:
     driver: bridge
+
+
+
+
+
+
+
+
+
+
+
+
+# version: '3.8'
+
+# services:
+#   jenkins:
+#     image: jenkins/jenkins:lts
+#     container_name: jenkins
+#     ports:
+#       - "8080:8080"
+#       - "50000:50000"
+#     volumes:
+#       - jenkins_home:/var/jenkins_home
+#     networks:
+#       - dev-network
+#     environment:
+#       - JENKINS_OPTS=--prefix=/jenkins
+#     # command: >
+#     #   /bin/bash -c "apt update && apt install -y maven && exec /usr/local/bin/jenkins.sh"
+
+
+#   sonarqube:
+#     image: sonarqube:lts
+#     container_name: sonarqube
+#     ports:
+#       - "9000:9000"
+#     networks:
+#       - dev-network
+#     environment:
+#       - SONARQUBE_JDBC_URL=jdbc:postgresql://sonarqube-db:5432/sonar
+#     depends_on:
+#       - sonarqube-db
+
+#   sonarqube-db:
+#     image: postgres:latest
+#     container_name: sonarqube-db
+#     environment:
+#       - POSTGRES_USER=sonar
+#       - POSTGRES_PASSWORD=sonar
+#       - POSTGRES_DB=sonar
+#     networks:
+#       - dev-network
+
+#   selenium:
+#     image: selenium/standalone-chrome
+#     container_name: selenium
+#     ports:
+#       - "4444:4444"
+#     networks:
+#       - dev-network
+
+# volumes:
+#   jenkins_home:
+
+# networks:
+#   dev-network:
+#     driver: bridge
