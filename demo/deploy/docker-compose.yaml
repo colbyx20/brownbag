@@ -6,3 +6,9 @@ services:
     container_name: brown-bag-deploy-prod 
     ports: 
     - "5001:5000"
+    networks:
+    - brownbag-prod-network
+
+networks:
+  brownbag-prod-network:
+    driver: bridge
