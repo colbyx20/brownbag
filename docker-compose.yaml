@@ -13,6 +13,11 @@ services:
       - dev-network
     environment:
       - JENKINS_OPTS=--prefix=/jenkins
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: '4g'
 
   jenkins-docker:
     # image: docker:dind
@@ -24,6 +29,11 @@ services:
     volumes:
       - jenkins-docker-certs:/certs/client
       - jenkins-data:/var/jenkins_home
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: '2g'
     networks:
       dev-network:
         aliases:
@@ -35,23 +45,32 @@ services:
       curl -sO http://jenkins:8080/jenkins/jnlpJars/agent.jar && \
       java -jar agent.jar -url http://jenkins:8080/jenkins -secret c81d72897dbd0b47dcdbbcda6118274c532c1cac7a9acaea9f75bf634eaffb38 -name agent1 -webSocket -workDir "/home/jenkins/"
 
+  init-jenkins-deploy:
+    image: busybox
+    container_name: init-jenkins-deploy
+    command: sh -c "chmod 777 /var/run/docker.sock"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
   jenkins-deploy:
-      image: jenkins/inbound-agent:latest
+      # image: jenkins/inbound-agent:latest
+      image: colbyx20/jenkins-inbound:1
       container_name: jenkins-deploy
       privileged: true
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
         - jenkins-data:/var/jenkins_home
-      networks:
-        dev-network:
-          aliases:
-            - docker
+      depends_on:
+      - jenkins 
+      - init-jenkins-deploy
       environment:
         JENKINS_URL: "http://jenkins:8080/jenkins"
         JENKINS_AGENT_NAME: "agent2"
         JENKINS_SECRET: "c2cf7ebe72f8ca40eb678ea5b66071cbe8fadc216b042900e30ee0dd6f1e3f9d"
-  #     # command: >
-  #       # curl -sO http://jenkins:8080/jenkins/jnlpJars/agent.jar && java -jar agent.jar -url http://jenkins:8080/jenkins -secret c2cf7ebe72f8ca40eb678ea5b66071cbe8fadc216b042900e30ee0dd6f1e3f9d -name agent2 -webSocket -workDir "/home/jenkins/"
+      networks:
+        dev-network:
+          aliases:
+            - docker
 
   sonarqube:
     image: sonarqube:lts
