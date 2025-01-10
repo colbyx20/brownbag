@@ -19,32 +19,6 @@ services:
           cpus: '2.0'
           memory: '4g'
 
-  jenkins-docker:
-    # image: docker:dind
-    image: colbyx20/jenkins-agent:1
-    container_name: jenkins-docker
-    privileged: true
-    environment:
-      - DOCKER_TLS_CERTDIR=/certs
-    volumes:
-      - jenkins-docker-certs:/certs/client
-      - jenkins-data:/var/jenkins_home
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: '2g'
-    networks:
-      dev-network:
-        aliases:
-          - docker
-    ports:
-      - "2376:2376"
-    command: >
-      --storage-driver overlay2 && \
-      curl -sO http://jenkins:8080/jenkins/jnlpJars/agent.jar && \
-      java -jar agent.jar -url http://jenkins:8080/jenkins -secret c81d72897dbd0b47dcdbbcda6118274c532c1cac7a9acaea9f75bf634eaffb38 -name agent1 -webSocket -workDir "/home/jenkins/"
-
   init-jenkins-deploy:
     image: busybox
     container_name: init-jenkins-deploy
@@ -53,7 +27,6 @@ services:
     - /var/run/docker.sock:/var/run/docker.sock
 
   jenkins-deploy:
-      # image: jenkins/inbound-agent:latest
       image: colbyx20/jenkins-inbound:1
       container_name: jenkins-deploy
       privileged: true
@@ -110,3 +83,31 @@ volumes:
 networks:
   dev-network:
     driver: bridge
+  
+  
+  
+  # jenkins-docker:
+  #   # image: docker:dind
+  #   image: colbyx20/jenkins-agent:1
+  #   container_name: jenkins-docker
+  #   privileged: true
+  #   environment:
+  #     - DOCKER_TLS_CERTDIR=/certs
+  #   volumes:
+  #     - jenkins-docker-certs:/certs/client
+  #     - jenkins-data:/var/jenkins_home
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '1.0'
+  #         memory: '2g'
+  #   networks:
+  #     dev-network:
+  #       aliases:
+  #         - docker
+  #   ports:
+  #     - "2376:2376"
+  #   command: >
+  #     --storage-driver overlay2 && \
+  #     curl -sO http://jenkins:8080/jenkins/jnlpJars/agent.jar && \
+  #     java -jar agent.jar -url http://jenkins:8080/jenkins -secret c81d72897dbd0b47dcdbbcda6118274c532c1cac7a9acaea9f75bf634eaffb38 -name agent1 -webSocket -workDir "/home/jenkins/"
