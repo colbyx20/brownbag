@@ -64,21 +64,24 @@ services:
       - POSTGRES_USER=sonar
       - POSTGRES_PASSWORD=sonar
       - POSTGRES_DB=sonar
+    volumes:
+    - pg-data:/var/lib/postgresql/data
     networks:
       - dev-network
 
-  selenium:
-    image: selenium/standalone-chrome
-    container_name: selenium
-    ports:
-      - "4444:4444"
-    networks:
-      - dev-network
+  # selenium:
+  #   image: selenium/standalone-chrome
+  #   container_name: selenium
+  #   ports:
+  #     - "4444:4444"
+  #   networks:
+  #     - dev-network
 
 volumes:
   jenkins_home:
   jenkins-docker-certs:
   jenkins-data:
+  pg-data:
 
 networks:
   dev-network:
