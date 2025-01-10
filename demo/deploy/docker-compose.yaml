@@ -11,4 +11,4 @@ services:
 
 networks:
   brownbag-dev-network:
-    dreiver: bridge
+    driver: bridge
