@@ -3,6 +3,12 @@ version: '3.8'
 services:
   brownbag-app-dev:
     image: colbyx20/brownbag-app-dev:1.0
-    container_name: brown-bag-deploy-dev 
+    container_name: brown-bag-deploy-dev
+    networks:
+    - brownbag-dev-network 
     ports: 
     - "5000:5000"
+
+networks:
+  brownbag-dev-network:
+    dreiver: bridge
