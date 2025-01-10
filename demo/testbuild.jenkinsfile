@@ -1,33 +1,35 @@
-pipeline {
 
-     agent {
-        label 'jenkins-docker'  // Specify the custom agent node (jenkins-docker)
+pipeline {
+    agent {
+        label 'docker-deploy'
     }
 
     environment {
         SONARQUBE = 'sonarqube'
         ARTIFACT_NAME = 'demo-1.0-SNAPSHOT.jar'
-        DEPLOY_ENV = 'production'
-        SONAR_TOKEN = 'sqa_401322c30adba780ed625702867c11294d4f9166'  // You may want to replace this with Jenkins credentials
+        DEPLOY_ENV = 'development'
+        SONAR_TOKEN = 'sqa_bdd34d719506fdbc14abd770b9bc2c8bf8b419e8'
+        DOCKER_IMAGE = 'colbyx20/brownbag-app-dev:1.0'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 // Pull the code from Git repository
-                git branch: 'main', url: 'https://github.com/colbyx20/brownbag.git'
+                git branch: 'dev', url: 'https://github.com/colbyx20/brownbag.git'
             }
         }
 
         stage('Clean') {
             steps {
                 script {
-                  // Clean the previous build artifacts
-                  sh 'mvn clean -f demo/pom.xml'
+                    // Clean the previous build artifacts
+                    sh 'mvn clean -f demo/pom.xml'
                 }
             }
         }
 
+        // Uncomment and customize the Test stage as needed
         stage('Test') {
             steps {
                 script {
@@ -37,14 +39,19 @@ pipeline {
             }
         }
 
-        // stage('SonarQube Analysis') {
-        //     steps {
-        //         script {
-        //             // Run SonarQube analysis
-        //             sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=sqa_401322c30adba780ed625702867c11294d4f9166"
-        //         }
-        //     }
-        // }
+        // Uncomment and customize the SonarQube Analysis stage as needed
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    // Run SonarQube analysis
+                     withCredentials([usernamePassword(credentialsId: 'sonar-user-pass', usernameVariable: 'SONAR_USERNAME', passwordVariable: 'SONAR_PASSWORD')]) {
+                        sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD}"
+                    }
+                    
+                    // sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_TOKEN}"
+                }
+            }
+        }
 
         stage('Package') {
             steps {
@@ -55,34 +62,174 @@ pipeline {
             }
         }
 
-        stage('Build Artifact') {
+        stage('Verify and Build Docker Image') {
             steps {
                 script {
-                    // Verify the artifact is created
+                    // Verify the artifact
                     sh 'ls -l demo/target/*.jar'
                 }
-            }
-        }
 
-        stage('Deploy') {
-            steps {
                 script {
-                    dir('/home/jenkins/workspace/brownbag/demo'){
-                        sh '''
-                            docker login
-                            docker build -t colbyx20/brownbag:1 .
-                            docker push colbyx20/brownbag:1
-                        '''
-                        
-                    }  
+                    dir('demo') {
+                        // Build the Docker image
+                        sh 'docker build -t $DOCKER_IMAGE .'
+                    }
                 }
             }
         }
     }
 
-    // post {
-    //     always {
-    //         cleanWs()  // Clean workspace after each run
-    //     }
-    // }
+    post {
+        success {
+            // Deployment steps after successful build
+            script {
+                // node('docker-deploy') {
+                    // Deploy the artifact (example: running the Docker container)
+                    echo "Deploying Docker image $DOCKER_IMAGE to $DEPLOY_ENV"
+                    // Example: docker run command
+                    // sh "docker run -d -p 5000:5000 $DOCKER_IMAGE"
+                    dir('demo/deploy'){
+                        sh 'docker-compose down'
+                        sh 'sleep 3'
+                        sh 'docker-compose up --build -d'
+                    }
+                    sh 'docker ps'
+                // }
+            }
+        }
+
+        /*
+        always {
+            // Clean workspace after each run
+            cleanWs()
+        }
+        */
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// pipeline {
+//     agent {
+//         label 'docker'
+//     }
+
+//     environment {
+//         SONARQUBE = 'sonarqube'
+//         ARTIFACT_NAME = 'demo-1.0-SNAPSHOT.jar'
+//         DEPLOY_ENV = 'development'
+//         SONAR_TOKEN = 'sqa_688b21c6de07a0348a69b47bb89458a718346601'
+//         DOCKER_IMAGE = 'colbyx20/brownbag-app:1.0'
+//     }
+
+//     stages {
+//         stage('Checkout') {
+//             steps {
+//                 // Pull the code from Git repository
+//                 git branch: 'main', url: 'https://github.com/colbyx20/brownbag.git'
+//             }
+//         }
+
+//         stage('Clean') {
+//             steps {
+//                 script {
+//                     // Clean the previous build artifacts
+//                     sh 'mvn clean -f demo/pom.xml'
+//                 }
+//             }
+//         }
+
+//         // Uncomment and customize the Test stage as needed
+        
+//         stage('Test') {
+//             steps {
+//                 script {
+//                     // Run the unit tests (including JaCoCo code coverage)
+//                     sh 'mvn test -f demo/pom.xml'
+//                 }
+//             }
+//         }
+        
+
+//         // Uncomment and customize the SonarQube Analysis stage as needed
+        
+//         stage('SonarQube Analysis') {
+//             steps {
+//                 script {
+//                     // Run SonarQube analysis
+//                     sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_TOKEN}"
+//                 }
+//             }
+            
+        
+
+//         stage('Package') {
+//             steps {
+//                 script {
+//                     // Package the application into a JAR file
+//                     sh 'mvn package -f demo/pom.xml -DskipTests'
+//                 }
+//             }
+//         }
+
+//         stage('Verify and Build Docker Image') {
+//             steps {
+//                 script {
+//                     // Verify the artifact
+//                     sh 'ls -l demo/target/*.jar'
+//                 }
+
+//                 script {
+//                     dir('demo') {
+//                         // Build the Docker image
+//                         sh 'docker build -t $DOCKER_IMAGE .'
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     post {
+//         success {
+//             // Deployment steps after successful build
+//             script {
+//                 node('docker-deploy') {
+//                     // Deploy the artifact (example: running the Docker container)
+//                     echo "Deploying Docker image $DOCKER_IMAGE to $DEPLOY_ENV"
+//                     // Example: docker run command
+//                     sh "docker run -d -p 5000:5000 $DOCKER_IMAGE"
+//                     sh 'ls'
+//                     sh 'pwd'
+//                     sh 'docker ps'
+//                 }
+//             }
+//         }
+
+//         /*
+//         always {
+//             // Clean workspace after each run
+//             cleanWs()
+//         }
+//         */
+//     }
+// }
+
+
+
+
