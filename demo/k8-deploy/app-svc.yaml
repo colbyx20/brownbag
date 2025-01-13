@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web-app-dev
+  name: web-app-dev
+  namespace: brownbag
+spec:
+  ports:
+  - nodePort: 32641
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: web-app-dev
+  sessionAffinity: None
+  type: LoadBalancer
