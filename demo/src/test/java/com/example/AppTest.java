@@ -19,7 +19,7 @@ class MyApplicationTest {
     @Test
     void indexShouldReturnHomePage() {
         ResponseEntity<String> response = this.restTemplate.getForEntity("/", String.class);
-        assertThat(response.getBody()).contains("Welcome to the Home Page");
+        assertThat(response.getBody()).contains("Welcome to Dev Environment");
     }
 
     @Test
