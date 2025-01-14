@@ -17,13 +17,6 @@ services:
           cpus: '2.0'
           memory: '4g'
 
-  # init-jenkins-deploy:
-  #   image: busybox
-  #   container_name: init-jenkins-deploy
-  #   command: sh -c "chmod 777 /var/run/docker.sock"
-  #   volumes:
-  #   - /var/run/docker.sock:/var/run/docker.sock
-
   jenkins-deploy:
       image: colbyx20/jenkins-inbound:1
       container_name: jenkins-deploy
@@ -34,13 +27,18 @@ services:
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
         - jenkins-data:/var/jenkins_home
+        - /home/colby/.ssh:/home/jenkins/.ssh
       depends_on:
       - jenkins 
-      # - init-jenkins-deploy
       environment:
         JENKINS_URL: "http://jenkins:8080/jenkins"
         JENKINS_AGENT_NAME: "agent2"
         JENKINS_SECRET: "c2cf7ebe72f8ca40eb678ea5b66071cbe8fadc216b042900e30ee0dd6f1e3f9d"
+      deploy:
+        resources:
+          limits:
+            cpus: '2.0'
+            memory: '4g'
       networks:
         dev-network:
           aliases:
