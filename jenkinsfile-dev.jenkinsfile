@@ -1,0 +1,103 @@
+
+pipeline {
+    agent {
+        label 'docker-deploy'
+    }
+
+    environment {
+        SONARQUBE = 'sonarqube'
+        ARTIFACT_NAME = 'demo-1.0-SNAPSHOT.jar'
+        DEPLOY_ENV = 'development'
+        DOCKER_IMAGE = "colbyx20/brownbag-app-dev:${params.RELEASE}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps{
+                    checkout scmGit(
+                        branches: [[name: 'dev']],
+                        userRemoteConfigs: [[credentialsId:  'GIT-CREDENTIALS',
+                            url: 'git@github.com:colbyx20/brownbag.git']])
+                }
+        }
+
+        stage('Clean') {
+            steps {
+                script {
+                    sh 'mvn clean -f demo/pom.xml'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    sh 'mvn test -f demo/pom.xml'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'sonar-user-pass', usernameVariable: 'SONAR_USERNAME', passwordVariable: 'SONAR_PASSWORD')]) {
+                        sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD}"
+                    }
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                script {
+                    sh 'mvn package -f demo/pom.xml -DskipTests'
+                }
+            }
+        }
+
+        stage('Verify and Build Docker Image') {
+            steps {
+                script {
+                    sh 'ls -l demo/target/*.jar'
+                }
+
+                script {
+                    dir('demo') {
+                        sh "docker build -t ${DOCKER_IMAGE} ."
+                    }
+                }
+            }
+        }
+
+        stage('Modify and Push'){
+            steps{
+                sh "git config --global user.email 'colbyx20@gmail.com'"
+                sh "git config --global user.name 'jenkins'"
+                sh "git add ."
+                sh "git commit -m 'Jenkins push new image ${DOCKER_IMAGE}'"
+                sh "git push origin HEAD:dev"
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                echo "Deploying Docker image $DOCKER_IMAGE to $DEPLOY_ENV"
+                dir('demo/deploy'){
+                    echo "Updating image to: ${DOCKER_IMAGE}"
+                    sh "yq eval '.services.brownbag-app-dev.image = env(DOCKER_IMAGE)' -i docker-compose.yaml"
+                    sh 'docker-compose down'
+                    sh 'sleep 3'
+                    sh 'cat docker-compose.yaml'
+                    sh 'docker-compose up --build -d'
+                }
+                sh 'docker ps'
+            }
+        }
+    }
+}
+
+
+
+

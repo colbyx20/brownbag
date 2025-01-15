@@ -34,69 +34,11 @@ import org.springframework.web.servlet.ModelAndView;
 <span class="pc bpc" id="L34" title="1 of 4 branches missed.">        if (&quot;user123&quot;.equals(username) &amp;&amp; &quot;password123&quot;.equals(password)) {</span>
 <span class="fc" id="L35">            modelAndView.setViewName(&quot;success&quot;);</span>
 <span class="fc" id="L36">            modelAndView.addObject(&quot;message&quot;, &quot;Login successful!&quot;);</span>
-<span class="fc" id="L37">        } else {</span>
+        } else {
 <span class="fc" id="L38">            modelAndView.setViewName(&quot;user-login&quot;);</span>
 <span class="fc" id="L39">            modelAndView.addObject(&quot;message&quot;, &quot;Invalid credentials. Please try again.&quot;);</span>
         }
 <span class="fc" id="L41">        return modelAndView;</span>
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// package com.example;
-
-// import java.util.HashMap;
-
-// class Data {
-//     int id;
-//     String user;
-
-//     public Data(int id, String user) {
-//         this.id = id;
-//         this.user = user;
-//     }
-
-//     @Override
-//     public String toString() {
-//         return &quot;Data{Id=&quot; + id + &quot;, user=&quot; + user + &quot;}&quot;;
-//     }
-// }
-
-// public class App {
-//     HashMap&lt;Integer, Data&gt; mymap = new HashMap&lt;&gt;(); 
-
-//     public static void main(String[] args) {
-//         App app = new App();
-//         app.run();
-//     }
-
-//     public void run() {
-//         // Create some Data objects
-//         Data d1 = new Data(1, &quot;name1&quot;);
-//         Data d2 = new Data(2, &quot;name2&quot;);
-
-
-//         // Store Data objects into HashMap
-//         mymap.put(d1.id, d1);
-//         mymap.put(d2.id, d2);
-
-//         // Print the contents of the HashMap
-//         for (Integer key : mymap.keySet()) {
-//             System.out.println(&quot;Key: &quot; + key + &quot;, Value: &quot; + mymap.get(key));
-//         }
-//     }
-// }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
