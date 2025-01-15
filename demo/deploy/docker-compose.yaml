@@ -1,5 +1,5 @@
 services:
-  brownbag-app-dev:
+  brownbag-app-prod:
     image: colbyx20/brownbag-app:1.0
     container_name: brown-bag-deploy-prod
     networks:
