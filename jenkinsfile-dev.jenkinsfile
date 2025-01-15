@@ -68,6 +68,16 @@ pipeline {
                 }
             }
         }
+
+        stage('Modify and Push'){
+            steps{
+                sh "git config --global user.email 'colbyx20@gmail.com'"
+                sh "git config --global user.name 'jenkins'"
+                sh "git add ."
+                sh "git commit -m 'Jenkins push new image ${DOCKER_IMAGE}'"
+                sh "git push origin HEAD:dev"
+            }
+        }
     }
 
     post {

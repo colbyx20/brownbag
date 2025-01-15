@@ -80,12 +80,10 @@ pipeline {
 
         stage('Modify and push'){
             steps{
-                sh "ls"
-                sh "echo 'text' >> demo/testpush.txt "
                 sh "git config --global user.email 'colbyx20@gmail.com'"
                 sh "git config --global user.name 'jenkins'"
                 sh "git add ."
-                sh "git commit -m 'testing git push'"
+                sh "git commit -m 'Jenkins push new image ${DOCKER_IMAGE}'"
                 sh "git push origin HEAD:dev"
             }
         }
