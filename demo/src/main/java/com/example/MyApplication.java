@@ -10,6 +10,11 @@ import org.springframework.web.servlet.ModelAndView;
 
 @SpringBootApplication
 public class MyApplication {
+
+    int number;
+    String names;
+    
+
     public static void main(String[] args) {
         SpringApplication.run(MyApplication.class, args);
     }
