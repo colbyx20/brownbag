@@ -10,35 +10,40 @@ import org.springframework.web.servlet.ModelAndView;
 
 @SpringBootApplication
 <span class="fc" id="L12">public class MyApplication {</span>
+
+    int number;
+    String names;
+    
+
     public static void main(String[] args) {
-<span class="nc" id="L14">        SpringApplication.run(MyApplication.class, args);</span>
-<span class="nc" id="L15">    }</span>
+<span class="nc" id="L19">        SpringApplication.run(MyApplication.class, args);</span>
+<span class="nc" id="L20">    }</span>
 }
 
 @Controller
-<span class="fc" id="L19">class MyController {</span>
+<span class="fc" id="L24">class MyController {</span>
 
     @GetMapping(&quot;/&quot;)
     public String index() {
-<span class="fc" id="L23">        return &quot;index&quot;;</span>
+<span class="fc" id="L28">        return &quot;index&quot;;</span>
     }
 
     @GetMapping(&quot;/user-login&quot;)
     public String userLogin() {
-<span class="fc" id="L28">        return &quot;user-login&quot;;</span>
+<span class="fc" id="L33">        return &quot;user-login&quot;;</span>
     }
 
     @PostMapping(&quot;/login&quot;)
     public ModelAndView login(@RequestParam String username, @RequestParam String password) {
-<span class="fc" id="L33">        ModelAndView modelAndView = new ModelAndView();</span>
-<span class="pc bpc" id="L34" title="1 of 4 branches missed.">        if (&quot;user123&quot;.equals(username) &amp;&amp; &quot;password123&quot;.equals(password)) {</span>
-<span class="fc" id="L35">            modelAndView.setViewName(&quot;success&quot;);</span>
-<span class="fc" id="L36">            modelAndView.addObject(&quot;message&quot;, &quot;Login successful!&quot;);</span>
+<span class="fc" id="L38">        ModelAndView modelAndView = new ModelAndView();</span>
+<span class="pc bpc" id="L39" title="1 of 4 branches missed.">        if (&quot;user123&quot;.equals(username) &amp;&amp; &quot;password123&quot;.equals(password)) {</span>
+<span class="fc" id="L40">            modelAndView.setViewName(&quot;success&quot;);</span>
+<span class="fc" id="L41">            modelAndView.addObject(&quot;message&quot;, &quot;Login successful!&quot;);</span>
         } else {
-<span class="fc" id="L38">            modelAndView.setViewName(&quot;user-login&quot;);</span>
-<span class="fc" id="L39">            modelAndView.addObject(&quot;message&quot;, &quot;Invalid credentials. Please try again.&quot;);</span>
+<span class="fc" id="L43">            modelAndView.setViewName(&quot;user-login&quot;);</span>
+<span class="fc" id="L44">            modelAndView.addObject(&quot;message&quot;, &quot;Invalid credentials. Please try again.&quot;);</span>
         }
-<span class="fc" id="L41">        return modelAndView;</span>
+<span class="fc" id="L46">        return modelAndView;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
