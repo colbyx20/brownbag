@@ -4,10 +4,10 @@ pipeline {
     }
 
     environment {
-      SONARQUBE = 'sonarqube'
-      ARTIFACT_NAME = 'demo-1.0-SNAPSHOT.jar'
-      DEPLOY_ENV = 'development'
-      DOCKER_IMAGE = "colbyx20/brownbag-app:${params.RELEASE}"
+        SONARQUBE = 'sonarqube'
+        ARTIFACT_NAME = 'demo-1.0-SNAPSHOT.jar'
+        DEPLOY_ENV = 'development'
+        DOCKER_IMAGE = "colbyx20/brownbag-app:${params.RELEASE}"
     }
 
     stages {
@@ -37,7 +37,7 @@ pipeline {
                 script {
                     // Run SonarQube analysis
                     withCredentials([usernamePassword(credentialsId: 'sonar-user-pass', usernameVariable: 'SONAR_USERNAME', passwordVariable: 'SONAR_PASSWORD')]) {
-                      sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD}"
+                        sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD}"
                     }
                 }
             }
@@ -50,21 +50,21 @@ pipeline {
         }
 
         stage('Build Image'){
-          steps{
-            script{
-              dir('demo'){
-                sh "docker build -t ${DOCKER_IMAGE} ."
-              }
+            steps{
+                script{
+                    dir('demo'){
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                    }
+                }
             }
-          }
         }
 
         stage('Push Docker Image'){
-          steps{
-              script{
-                  withCredentials([usernamePassword(credentialsId: 'DOCKER_LOGIN', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                      sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                      sh "docker push ${DOCKER_IMAGE}"
+            steps{
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'DOCKER_LOGIN', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                            sh "docker push ${DOCKER_IMAGE}"
                     }
                 }
             }

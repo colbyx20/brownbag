@@ -13,47 +13,43 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            steps {
-                // Pull the code from Git repository
-                git branch: 'dev', url: 'https://github.com/colbyx20/brownbag.git'
-            }
+            steps{
+                    checkout scmGit(
+                        branches: [[name: 'dev']],
+                        userRemoteConfigs: [[credentialsId:  'GIT-CREDENTIALS',
+                            url: 'git@github.com:colbyx20/brownbag.git']])
+                }
         }
 
         stage('Clean') {
             steps {
                 script {
-                    // Clean the previous build artifacts
                     sh 'mvn clean -f demo/pom.xml'
                 }
             }
         }
 
-        // Uncomment and customize the Test stage as needed
         stage('Test') {
             steps {
                 script {
-                    // Run the unit tests (including JaCoCo code coverage)
                     sh 'mvn test -f demo/pom.xml'
                 }
             }
         }
 
-        // // Uncomment and customize the SonarQube Analysis stage as needed
-        // stage('SonarQube Analysis') {
-        //     steps {
-        //         script {
-        //             // Run SonarQube analysis
-        //              withCredentials([usernamePassword(credentialsId: 'sonar-user-pass', usernameVariable: 'SONAR_USERNAME', passwordVariable: 'SONAR_PASSWORD')]) {
-        //                 sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD}"
-        //             }
-        //         }
-        //     }
-        // }
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'sonar-user-pass', usernameVariable: 'SONAR_USERNAME', passwordVariable: 'SONAR_PASSWORD')]) {
+                        sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD}"
+                    }
+                }
+            }
+        }
 
         stage('Package') {
             steps {
                 script {
-                    // Package the application into a JAR file
                     sh 'mvn package -f demo/pom.xml -DskipTests'
                 }
             }
@@ -62,44 +58,34 @@ pipeline {
         stage('Verify and Build Docker Image') {
             steps {
                 script {
-                    // Verify the artifact
                     sh 'ls -l demo/target/*.jar'
                 }
 
                 script {
                     dir('demo') {
-                        // Build the Docker image
-                        sh 'docker build -t $DOCKER_IMAGE .'
+                        sh "docker build -t ${DOCKER_IMAGE} ."
                     }
                 }
             }
         }
     }
 
-     post {
-         success {
-             // Deployment steps after successful build
-             script {
-                 // node('docker-deploy') {
-                     // Deploy the artifact (example: running the Docker container)
-                     echo "Deploying Docker image $DOCKER_IMAGE to $DEPLOY_ENV"
-                     // Example: docker run command
-                     dir('demo/deploy'){
-    //                     sh "chmod 777 docker-compose.yaml"
-                         echo "Updating image to: ${DOCKER_IMAGE}"
-    //                     yq e '.services.brownbag-app-dev.image = env(DOCKER_IMAGE)' -i docker-compose.yaml
-                        sh "yq eval '.services.brownbag-app-dev.image = env(DOCKER_IMAGE)' -i docker-compose.yaml"
-                        // yq eval '.services.brownbag-app-dev.image="colbyx20/brownbag-app-dev:2.0"' -i docker-compose.yaml
-                        sh 'docker-compose down'
-                        sh 'sleep 3'
-                        sh 'cat docker-compose.yaml'
-                        sh 'docker-compose up --build -d'
-                     }
-                         sh 'docker ps'
-                 // }
-             }
-         }
-     }
+    post {
+        success {
+            script {
+                echo "Deploying Docker image $DOCKER_IMAGE to $DEPLOY_ENV"
+                dir('demo/deploy'){
+                    echo "Updating image to: ${DOCKER_IMAGE}"
+                    sh "yq eval '.services.brownbag-app-dev.image = env(DOCKER_IMAGE)' -i docker-compose.yaml"
+                    sh 'docker-compose down'
+                    sh 'sleep 3'
+                    sh 'cat docker-compose.yaml'
+                    sh 'docker-compose up --build -d'
+                }
+                sh 'docker ps'
+            }
+        }
+    }
 }
 
 

@@ -1,0 +1,7 @@
+target/classes
+target/generated-test-sources
+target/maven-archiver
+target/maven-status
+site/
+sonar/
+surefire-reports/
