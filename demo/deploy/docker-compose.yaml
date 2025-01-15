@@ -1,7 +1,7 @@
 services:
   brownbag-app-dev:
     image: colbyx20/brownbag-app:1.0
-    container_name: brown-bag-deploy-dev
+    container_name: brown-bag-deploy-prod
     networks:
     - brownbag-dev-network 
     ports: 
