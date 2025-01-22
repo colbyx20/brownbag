@@ -6,8 +6,6 @@ services:
       - brownbag-prod-network
     ports:
       - "5002:5000"
-  brownbag-app-dev:
-    image: colbyx20/brownbag-app:1.0.0.2
 networks:
   brownbag-prod-network:
     driver: bridge
