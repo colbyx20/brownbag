@@ -1,6 +1,6 @@
 services:
   brownbag-app-prod:
-    image: colbyx20/brownbag-app:1.0
+    image: colbyx20/brownbag-app:1.0.0.2
     container_name: brown-bag-deploy-prod
     networks:
       - brownbag-prod-network
