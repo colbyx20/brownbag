@@ -7,7 +7,7 @@ public class Users {
   String password;
   int badvariable;
   String otherBadVariable;
-  HashMap<Integer,String> user_map = new HashMap<>();
+  HashMap<Integer,String> userMap = new HashMap<>();
 
   
   public Users(int id, String username, String password) {
@@ -29,7 +29,7 @@ public class Users {
   }
 
   public void addUser(int id, String username) {
-    user_map.put(id, username);
+    userMap.put(id, username);
   }
 
 
