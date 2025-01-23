@@ -7,7 +7,7 @@ public class Users {
   String password;
   int badvariable;
   String otherBadVariable;
-  HashMap<Integer,String> user_map = new HashMap<Integer,String>();
+  HashMap<Integer,String> user_map = new HashMap<>();
 
   
   public Users(int id, String username, String password) {
