@@ -1,5 +1,6 @@
 package com.example;
 
+import java.util.HashMap;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,8 @@ public class MyApplication {
 
 @Controller
 class MyController {
+
+    
 
     @GetMapping("/")
     public String index() {
