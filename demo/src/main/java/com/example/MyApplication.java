@@ -18,6 +18,8 @@ public class MyApplication {
 @Controller
 class MyController {
 
+    
+
     @GetMapping("/")
     public String index() {
         return "index";

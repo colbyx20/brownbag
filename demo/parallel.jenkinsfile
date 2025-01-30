@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+
+    environment {
+        REGISTRY = "your-docker-registry.com"  // Change this
+        IMAGE_NAME = "your-app"               // Change this
+        DOCKER_COMPOSE_PATH = "/path/to/docker-compose.yml"  // Change this
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'develop', credentialsId: 'your-credentials-id', url: 'git@your-repo.git'
+            }
+        }
+
+        stage('Build & Test') {
+            parallel {
+                stage('Unit Tests') {
+                    steps {
+                        sh 'mvn test'
+                    }
+                }
+                stage('Static Code Analysis') {
+                    steps {
+                        sh 'mvn checkstyle:check || true'  // Ignore failures for now
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image & Security Scan') {
+            parallel {
+                stage('Build Docker Image') {
+                    steps {
+                        script {
+                            env.GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                            sh """
+                            docker build --no-cache -t $REGISTRY/$IMAGE_NAME:$GIT_SHA .
+                            docker tag $REGISTRY/$IMAGE_NAME:$GIT_SHA $REGISTRY/$IMAGE_NAME:latest
+                            """
+                        }
+                    }
+                }
+                stage('Security Scan') {
+                    steps {
+                        script {
+                            sh "trivy image --exit-code 1 $REGISTRY/$IMAGE_NAME:latest || echo 'Security scan warnings'"
+                        }
+                    }
+                }
+            }
+        }
+
+        // Manual Approval Before Pushing to Registry
+        stage('Manual Approval - Push Image to Registry') {
+            steps {
+                input message: 'Approve to push image to registry?', ok: 'Approve'
+            }
+        }
+
+        stage('Push to Registry') {
+            steps {
+                script {
+                    withDockerRegistry([credentialsId: 'docker-registry-creds', url: "https://$REGISTRY"]) {
+                        sh """
+                        docker push $REGISTRY/$IMAGE_NAME:$GIT_SHA
+                        docker push $REGISTRY/$IMAGE_NAME:latest
+                        """
+                    }
+                }
+            }
+        }
+
+        // Manual Approval Before Deploying to Production
+        stage('Manual Approval - Deploy to Production') {
+            steps {
+                input message: 'Approve to deploy to production?', ok: 'Deploy'
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                script {
+                    sh """
+                    docker-compose -f $DOCKER_COMPOSE_PATH pull
+                    docker-compose -f $DOCKER_COMPOSE_PATH up -d --remove-orphans
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment successful!"
+        }
+        failure {
+            script {
+                echo "Deployment failed! Rolling back..."
+                sh """
+                docker-compose -f $DOCKER_COMPOSE_PATH down
+                docker-compose -f $DOCKER_COMPOSE_PATH pull $IMAGE_NAME:previous
+                docker-compose -f $DOCKER_COMPOSE_PATH up -d --remove-orphans
+                """
+            }
+        }
+    }
+}
