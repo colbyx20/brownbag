@@ -15,3 +15,4 @@ demo/target/site/jacoco/jacoco-sessions.html
 demo/target/site/jacoco/jacoco.xml
 demo/target/surefire-reports/com.example.MyApplicationTest.txt
 demo/target/surefire-reports/TEST-com.example.MyApplicationTest.xml
+../.vscode
