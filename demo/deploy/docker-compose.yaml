@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   brownbag-app-dev:
     image: colbyx20/brownbag-app:latest
