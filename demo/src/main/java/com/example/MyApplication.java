@@ -31,7 +31,11 @@ class MyController {
     }
 
     @PostMapping("/login")
+
     public ModelAndView login(@RequestParam String username, @RequestParam String password) {
+
+        System.out.println("Testing");
+
         ModelAndView modelAndView = new ModelAndView();
         if ("user123".equals(username) && "password123".equals(password)) {
             modelAndView.setViewName("success");
