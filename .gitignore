@@ -1,18 +1,18 @@
-demo/target/demo-1.0-SNAPSHOT.jar.original
-demo/target/jacoco.exec
-demo/target/classes
-demo/target/generated-sources
-demo/target/generated-test-sources
-demo/target/maven-archiver
-demo/target/maven-status
-demo/target/site/
-demo/target/sonar/
-demo/target/surefire-reports/
-demo/target/demo-1.0.0-SNAPSHOT.jar.original
-demo/target/jacoco.exec
-demo/target/demo-1.0-SNAPSHOT.jar.original
-demo/target/site/jacoco/jacoco-sessions.html
-demo/target/site/jacoco/jacoco.xml
-demo/target/surefire-reports/com.example.MyApplicationTest.txt
-demo/target/surefire-reports/TEST-com.example.MyApplicationTest.xml
-../.vscode
+# demo/target/demo-1.0-SNAPSHOT.jar.original
+# demo/target/jacoco.exec
+# demo/target/classes
+# demo/target/generated-sources
+# demo/target/generated-test-sources
+# demo/target/maven-archiver
+# demo/target/maven-status
+# demo/target/site/
+# demo/target/sonar/
+# demo/target/surefire-reports/
+# demo/target/demo-1.0.0-SNAPSHOT.jar.original
+# demo/target/jacoco.exec
+# demo/target/demo-1.0-SNAPSHOT.jar.original
+# demo/target/site/jacoco/jacoco-sessions.html
+# demo/target/site/jacoco/jacoco.xml
+# demo/target/surefire-reports/com.example.MyApplicationTest.txt
+# demo/target/surefire-reports/TEST-com.example.MyApplicationTest.xml
+# ../.vscode
