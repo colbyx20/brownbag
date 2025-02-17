@@ -1,109 +1,123 @@
 pipeline {
-    agent any
+    agent {
+        label 'docker-deploy'
+    }
 
     environment {
-        REGISTRY = "your-docker-registry.com"  // Change this
-        IMAGE_NAME = "your-app"               // Change this
-        DOCKER_COMPOSE_PATH = "/path/to/docker-compose.yml"  // Change this
+        SONARQUBE = 'sonarqube'
+        ARTIFACT_NAME = 'demo-1.0-SNAPSHOT.jar'
+        DEPLOY_ENV = 'development'
+        DOCKER_IMAGE = "colbyx20/brownbag-app:${params.RELEASE}"
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'develop', credentialsId: 'your-credentials-id', url: 'git@your-repo.git'
+        stage('Checkout'){
+            steps{
+                cleanWs()
+                checkout scmGit(
+                    branches: [[name: 'dev']],
+                    userRemoteConfigs: [[credentialsId:  "GIT-CREDENTIALS",
+                        url: 'git@github.com:colbyx20/brownbag.git']])
             }
         }
 
-        stage('Build & Test') {
-            parallel {
-                stage('Unit Tests') {
-                    steps {
-                        sh 'mvn test'
-                    }
-                }
-                stage('Static Code Analysis') {
-                    steps {
-                        sh 'mvn checkstyle:check || true'  // Ignore failures for now
-                    }
-                }
+        stage('Clean'){
+            steps{
+                sh 'git switch dev'
+                sh "mvn clean -f demo/pom.xml"
             }
         }
 
-        stage('Build Docker Image & Security Scan') {
-            parallel {
-                stage('Build Docker Image') {
-                    steps {
-                        script {
-                            env.GIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                            sh """
-                            docker build --no-cache -t $REGISTRY/$IMAGE_NAME:$GIT_SHA .
-                            docker tag $REGISTRY/$IMAGE_NAME:$GIT_SHA $REGISTRY/$IMAGE_NAME:latest
-                            """
-                        }
+        stage('Unit Test'){
+            parallel{
+                stage ('TEST'){
+                    steps{
+                        sh "mvn test -f demo/pom.xml"
                     }
                 }
-                stage('Security Scan') {
+                stage('SonarQube'){
                     steps {
                         script {
-                            sh "trivy image --exit-code 1 $REGISTRY/$IMAGE_NAME:latest || echo 'Security scan warnings'"
+                            // Run SonarQube analysis
+                            withCredentials([usernamePassword(credentialsId: 'sonar-user-pass', usernameVariable: 'SONAR_USERNAME', passwordVariable: 'SONAR_PASSWORD')]) {
+                                //sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD}"
+                                sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=sqa_111e09e187ccfe3b194937a9e8b5ff86549b0d5e"                    
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Manual Approval Before Pushing to Registry
-        stage('Manual Approval - Push Image to Registry') {
-            steps {
-                input message: 'Approve to push image to registry?', ok: 'Approve'
+        stage('Package'){
+            steps{
+                sh "mvn package -f demo/pom.xml -DskipTests"
             }
         }
+        
 
-        stage('Push to Registry') {
+        stage('Approval') {
             steps {
                 script {
-                    withDockerRegistry([credentialsId: 'docker-registry-creds', url: "https://$REGISTRY"]) {
-                        sh """
-                        docker push $REGISTRY/$IMAGE_NAME:$GIT_SHA
-                        docker push $REGISTRY/$IMAGE_NAME:latest
-                        """
+                        def userInput = input id: 'Approval', message: 'Do you want to proceed to the Deploy stage?', ok: 'Proceed', parameters: [
+                            booleanParam(defaultValue: true, description: 'Approve deployment?', name: 'approve')
+                    ]
+                    if (!userInput) {
+                        error 'Deployment was not approved'
                     }
                 }
             }
         }
-
-        // Manual Approval Before Deploying to Production
-        stage('Manual Approval - Deploy to Production') {
-            steps {
-                input message: 'Approve to deploy to production?', ok: 'Deploy'
-            }
-        }
-
-        stage('Deploy with Docker Compose') {
-            steps {
-                script {
-                    sh """
-                    docker-compose -f $DOCKER_COMPOSE_PATH pull
-                    docker-compose -f $DOCKER_COMPOSE_PATH up -d --remove-orphans
-                    """
+        stage('Build Image'){
+            steps{
+                script{
+                    dir('demo'){
+                        sh "docker build -t ${DOCKER_IMAGE} ."
+                    }
                 }
             }
         }
-    }
+        
 
-    post {
-        success {
-            echo "Deployment successful!"
-        }
-        failure {
-            script {
-                echo "Deployment failed! Rolling back..."
-                sh """
-                docker-compose -f $DOCKER_COMPOSE_PATH down
-                docker-compose -f $DOCKER_COMPOSE_PATH pull $IMAGE_NAME:previous
-                docker-compose -f $DOCKER_COMPOSE_PATH up -d --remove-orphans
-                """
+        stage('Push Docker Image'){
+            steps{
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'DOCKER_LOGIN', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                        sh "docker push ${DOCKER_IMAGE}"
+                    }
+                }
+            }
+        }    
+        
+        stage('Update Docker-Compose Manifest'){
+            steps{
+                dir('demo/deploy'){
+                    sh "yq eval '.services.brownbag-app-dev.image=env(DOCKER_IMAGE)' -i docker-compose.yaml"
+                    sh "echo '********** Updated Image **********'"
+                    sh "yq eval '.services.brownbag-app-dev.image' docker-compose.yaml"
+                }
             }
         }
+        
+        stage('Modify and push'){
+            steps{
+                sh "git config --global user.email 'colbyx20@gmail.com'"
+                sh "git config --global user.name 'jenkins'"
+                sh "git add ."
+                sh "git commit -m 'Jenkins push new image ${DOCKER_IMAGE}'"
+                sh "git push origin HEAD:dev"
+            }
+        }
+
+        stage('Deploy Application - DEV'){
+            steps{
+                dir('demo/deploy'){
+                    sh 'docker-compose down  --remove-orphans'
+                    sh 'docker-compose up --build -d'
+                }
+            }
+        }
+
     }
 }
