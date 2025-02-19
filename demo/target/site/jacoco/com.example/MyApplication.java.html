@@ -34,15 +34,16 @@ import org.springframework.web.servlet.ModelAndView;
 
     public ModelAndView login(@RequestParam String username, @RequestParam String password) {
 
-<span class="fc" id="L37">        ModelAndView modelAndView = new ModelAndView();</span>
-<span class="pc bpc" id="L38" title="1 of 4 branches missed.">        if (&quot;user123&quot;.equals(username) &amp;&amp; &quot;password123&quot;.equals(password)) {</span>
-<span class="fc" id="L39">            modelAndView.setViewName(&quot;success&quot;);</span>
-<span class="fc" id="L40">            modelAndView.addObject(&quot;message&quot;, &quot;Login successful!&quot;);</span>
+
+<span class="fc" id="L38">        ModelAndView modelAndView = new ModelAndView();</span>
+<span class="pc bpc" id="L39" title="1 of 4 branches missed.">        if (&quot;user123&quot;.equals(username) &amp;&amp; &quot;password123&quot;.equals(password)) {</span>
+<span class="fc" id="L40">            modelAndView.setViewName(&quot;success&quot;);</span>
+<span class="fc" id="L41">            modelAndView.addObject(&quot;message&quot;, &quot;Login successful!&quot;);</span>
         } else {
-<span class="fc" id="L42">            modelAndView.setViewName(&quot;user-login&quot;);</span>
-<span class="fc" id="L43">            modelAndView.addObject(&quot;message&quot;, &quot;Invalid credentials. Please try again.&quot;);</span>
+<span class="fc" id="L43">            modelAndView.setViewName(&quot;user-login&quot;);</span>
+<span class="fc" id="L44">            modelAndView.addObject(&quot;message&quot;, &quot;Invalid credentials. Please try again.&quot;);</span>
         }
-<span class="fc" id="L45">        return modelAndView;</span>
+<span class="fc" id="L46">        return modelAndView;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
