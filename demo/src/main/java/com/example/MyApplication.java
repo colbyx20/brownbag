@@ -34,10 +34,6 @@ class MyController {
 
     public ModelAndView login(@RequestParam String username, @RequestParam String password) {
 
-        int val1;
-        int val2 = 1;
-        System.out.println("Testing");
-
         ModelAndView modelAndView = new ModelAndView();
         if ("user123".equals(username) && "password123".equals(password)) {
             modelAndView.setViewName("success");
