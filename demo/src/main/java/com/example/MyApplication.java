@@ -33,7 +33,9 @@ class MyController {
     @PostMapping("/login")
 
     public ModelAndView login(@RequestParam String username, @RequestParam String password) {
-
+        
+        int val;
+        int val2 = 0; 
         System.out.println("Testing");
 
         ModelAndView modelAndView = new ModelAndView();
