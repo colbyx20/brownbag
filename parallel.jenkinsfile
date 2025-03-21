@@ -40,8 +40,7 @@ pipeline {
                         script {
                             // Run SonarQube analysis
                             withCredentials([usernamePassword(credentialsId: 'sonar-user-pass', usernameVariable: 'SONAR_USERNAME', passwordVariable: 'SONAR_PASSWORD')]) {
-                                //sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD}"
-                                sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=sqa_111e09e187ccfe3b194937a9e8b5ff86549b0d5e"                    
+                                sh "mvn sonar:sonar -f demo/pom.xml -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=${SONAR_USERNAME} -Dsonar.password=${SONAR_PASSWORD}"
                             }
                         }
                     }
@@ -69,7 +68,7 @@ pipeline {
             }
         }
         stage('Build Image'){
-            steps{
+            steps{=
                 script{
                     dir('demo'){
                         sh "docker build -t ${DOCKER_IMAGE} ."
