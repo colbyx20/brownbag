@@ -75,6 +75,19 @@ services:
   #  depends_on:
   #    - postgres
 
+  bitbucket:
+    image: atlassian/bitbucket-server:latest
+    container_name: bitbucket
+    hostname: bitbucket
+    ports:
+      - "7990:7990"
+      - "7999:7999"
+    environment:
+      - BITBUCKET_HOME=/var/atlassian/application-data/bitbucket
+    volumes:
+      - bitbucket_home:/var/atlassian/application-data/bitbucket
+    networks:
+      - dev-network
 
   bamboo:
     image: atlassian/bamboo-server:latest
@@ -102,10 +115,8 @@ services:
       - dev-network
     volumes:
       - bamboo-agent-home:/home/bamboo
-
     depends_on:
       - bamboo
-
 
   postgres:
     image: postgres:latest
@@ -118,18 +129,18 @@ services:
     networks:
       - dev-network
 
-#  pgadmin:
-#    image: dpage/pgadmin4:latest
-#    container_name: pgadmin
-#    environment:
-#      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-#      PGADMIN_DEFAULT_PASSWORD: admin
-#    ports:
-#      - "8089:80"
-#    networks:
-#      - dev-network
-#    depends_on:
-#      - postgres
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8089:80"
+    networks:
+      - dev-network
+    depends_on:
+      - postgres
 volumes:
   jira_home:
   jenkins_home:
@@ -139,6 +150,7 @@ volumes:
   pg-data:
   bamboo-agent-home:
   bamboo_home:
+  bitbucket_home:
 
 networks:
   dev-network:
