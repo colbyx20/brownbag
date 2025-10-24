@@ -23,6 +23,8 @@ public class MyApplication {
 @Controller
 class MyController {
 
+    
+
     @GetMapping("/")
     public String index() {
         return "index";
@@ -34,7 +36,10 @@ class MyController {
     }
 
     @PostMapping("/login")
+
     public ModelAndView login(@RequestParam String username, @RequestParam String password) {
+
+
         ModelAndView modelAndView = new ModelAndView();
         if ("user123".equals(username) && "password123".equals(password)) {
             modelAndView.setViewName("success");

@@ -23,18 +23,23 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 <span class="fc" id="L24">class MyController {</span>
 
+    
+
     @GetMapping(&quot;/&quot;)
     public String index() {
-<span class="fc" id="L28">        return &quot;index&quot;;</span>
+<span class="fc" id="L25">        return &quot;index&quot;;</span>
     }
 
     @GetMapping(&quot;/user-login&quot;)
     public String userLogin() {
-<span class="fc" id="L33">        return &quot;user-login&quot;;</span>
+<span class="fc" id="L30">        return &quot;user-login&quot;;</span>
     }
 
     @PostMapping(&quot;/login&quot;)
+
     public ModelAndView login(@RequestParam String username, @RequestParam String password) {
+
+
 <span class="fc" id="L38">        ModelAndView modelAndView = new ModelAndView();</span>
 <span class="pc bpc" id="L39" title="1 of 4 branches missed.">        if (&quot;user123&quot;.equals(username) &amp;&amp; &quot;password123&quot;.equals(password)) {</span>
 <span class="fc" id="L40">            modelAndView.setViewName(&quot;success&quot;);</span>

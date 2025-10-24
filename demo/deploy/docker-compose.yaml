@@ -1,11 +1,11 @@
 services:
-  brownbag-app-prod:
-    image: colbyx20/brownbag-app:1.0.0.2
-    container_name: brown-bag-deploy-prod
+  brownbag-app-dev:
+    image: colbyx20/brownbag-app:1.0.3.9
+    container_name: brown-bag-deploy-dev
     networks:
-      - brownbag-prod-network
+      - brownbag-dev-network
     ports:
-      - "5002:5000"
+      - "5000:5000"
 networks:
-  brownbag-prod-network:
+  brownbag-dev-network:
     driver: bridge

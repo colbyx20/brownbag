@@ -1,89 +1,156 @@
 services:
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
+#   jira:
+#     image: atlassian/jira-software:10.0.0
+#     container_name: jira
+#     ports:
+#       - "8082:8080"
+#     environment:
+#       - ALT_JDBC_URL=jdbc:postgresql://postgres:5432/jira_db
+# #      - ALT_JDBC_URL=jdbc:postgresql://postgres:5432/jira_db?tcpKeepAlive=true
+#       - ALT_JDBC_USER=admin
+#       - ALT_JDBC_PASSWORD=admin
+#     volumes:
+#       - jira_home:/var/atlassian/application-data/jira_db
+#     networks:
+#       - dev-network
+#     depends_on:
+#       - postgres
+
+  #jenkins:
+  #  image: jenkins/jenkins:lts
+  #  container_name: jenkins
+  #  ports:
+  #    - "8081:8080"
+  #    - "50000:50000"
+  #  volumes:
+  #    - jenkins_home:/var/jenkins_home
+  #  networks:
+  #    - dev-network
+  #  environment:
+  #    - JENKINS_OPTS=--prefix=/jenkins
+  #  deploy:
+  #    resources:
+  #      limits:
+  #        cpus: '2.0'
+  #        memory: '4g'
+
+  #jenkins-deploy:
+  #    image: colbyx20/jenkins-inbound:1
+  #    container_name: jenkins-deploy
+  #    privileged: true
+  #    post_start:
+  #    - command: chmod 777 /var/run/docker.sock
+  #      user: root
+  #    volumes:
+  #      - /var/run/docker.sock:/var/run/docker.sock
+  #      - jenkins-data:/var/jenkins_home
+  #      - /home/colby/.ssh:/home/jenkins/.ssh
+  #    depends_on:
+  #    - jenkins 
+  #    environment:
+  #      JENKINS_URL: "http://jenkins:8080/jenkins"
+  #      JENKINS_AGENT_NAME: "agent2"
+  #      JENKINS_SECRET: "c2cf7ebe72f8ca40eb678ea5b66071cbe8fadc216b042900e30ee0dd6f1e3f9d"
+  #    deploy:
+  #      resources:
+  #        limits:
+  #          cpus: '2.0'
+  #          memory: '4g'
+  #    networks:
+  #      dev-network:
+  #        aliases:
+  #          - docker
+
+  #sonarqube:
+  #  image: sonarqube:lts
+  #  container_name: sonarqube
+  #  ports:
+  #    - "9000:9000"
+  #  networks:
+  #    - dev-network
+  #  environment:
+  #    - SONARQUBE_JDBC_URL=jdbc:postgresql://postgres:5432/sonarqube_db
+  #  volumes:
+  #  - sonarqube-data:/opt/sonarqube/data
+  #  depends_on:
+  #    - postgres
+
+  bitbucket:
+    image: atlassian/bitbucket-server:latest
+    container_name: bitbucket
+    hostname: bitbucket
     ports:
-      - "8081:8080"
-      - "50000:50000"
+      - "7990:7990"
+      - "7999:7999"
+    environment:
+      - BITBUCKET_HOME=/var/atlassian/application-data/bitbucket
     volumes:
-      - jenkins_home:/var/jenkins_home
+      - bitbucket_home:/var/atlassian/application-data/bitbucket
     networks:
       - dev-network
-    environment:
-      - JENKINS_OPTS=--prefix=/jenkins
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: '4g'
 
-  jenkins-deploy:
-      image: colbyx20/jenkins-inbound:1
-      container_name: jenkins-deploy
-      privileged: true
-      post_start:
-      - command: chmod 777 /var/run/docker.sock
-        user: root
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - jenkins-data:/var/jenkins_home
-        - /home/colby/.ssh:/home/jenkins/.ssh
-      depends_on:
-      - jenkins 
-      environment:
-        JENKINS_URL: "http://jenkins:8080/jenkins"
-        JENKINS_AGENT_NAME: "agent2"
-        JENKINS_SECRET: "c2cf7ebe72f8ca40eb678ea5b66071cbe8fadc216b042900e30ee0dd6f1e3f9d"
-      deploy:
-        resources:
-          limits:
-            cpus: '2.0'
-            memory: '4g'
-      networks:
-        dev-network:
-          aliases:
-            - docker
-
-  sonarqube:
-    image: sonarqube:lts
-    container_name: sonarqube
+  bamboo:
+    image: atlassian/bamboo-server:latest
+    container_name: bamboo
     ports:
-      - "9000:9000"
+      - "8085:8085"
+    environment:
+      - BAMBOO_HOME=/var/atlassian/application-data/bamboo
+      - BAMBOO_SERVER_JDBC_URL=jdbc:postgresql://postgres:5432/bamboo_db
+      - BAMBOO_SERVER_JDBC_USER=admin
+      - BAMBOO_SERVER_JDBC_PASSWORD=admin
+    volumes:
+      - bamboo_home:/var/atlassian/application-data/bamboo
     networks:
       - dev-network
-    environment:
-      - SONARQUBE_JDBC_URL=jdbc:postgresql://sonarqube-db:5432/sonar
-    volumes:
-    - sonarqube-data:/opt/sonarqube/data
     depends_on:
-      - sonarqube-db
+      - postgres
 
-  sonarqube-db:
-    image: postgres:latest
-    container_name: sonarqube-db
+  bamboo-agent:
+    image: atlassian/bamboo-agent-base:latest
+    container_name: bamboo-agent
     environment:
-      - POSTGRES_USER=sonar
-      - POSTGRES_PASSWORD=sonar
-      - POSTGRES_DB=sonar
+      - BAMBOO_SERVER=http://bamboo:8085
+    networks:
+      - dev-network
+    volumes:
+      - bamboo-agent-home:/home/bamboo
+    depends_on:
+      - bamboo
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
     volumes:
     - pg-data:/var/lib/postgresql/data
     networks:
       - dev-network
 
-  # selenium:
-  #   image: selenium/standalone-chrome
-  #   container_name: selenium
-  #   ports:
-  #     - "4444:4444"
-  #   networks:
-  #     - dev-network
-
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8089:80"
+    networks:
+      - dev-network
+    depends_on:
+      - postgres
 volumes:
+  jira_home:
   jenkins_home:
   jenkins-docker-certs:
   jenkins-data:
   sonarqube-data:
   pg-data:
+  bamboo-agent-home:
+  bamboo_home:
+  bitbucket_home:
 
 networks:
   dev-network:
